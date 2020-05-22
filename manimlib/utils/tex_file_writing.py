@@ -1,5 +1,6 @@
 import os
 import hashlib
+import subprocess
 
 from pathlib import Path
 
@@ -49,22 +50,18 @@ def tex_to_dvi(tex_file):
             "latex",
             "-interaction=batchmode",
             "-halt-on-error",
-            "-output-directory=\"{}\"".format(tex_dir),
-            "\"{}\"".format(tex_file),
-            ">",
-            os.devnull
+            "-output-directory={}".format(tex_dir),
+            "{}".format(tex_file)
         ] if not TEX_USE_CTEX else [
             "xelatex",
             "-no-pdf",
             "-interaction=batchmode",
             "-halt-on-error",
-            "-output-directory=\"{}\"".format(tex_dir),
-            "\"{}\"".format(tex_file),
-            ">",
-            os.devnull
+            "-output-directory={}".format(tex_dir),
+            "{}".format(tex_file)
         ]
-        exit_code = os.system(" ".join(commands))
-        if exit_code != 0:
+        exit_code=subprocess.run(commands,stdout=subprocess.DEVNULL)
+        if exit_code.returncode != 0:
             log_file = tex_file.replace(".tex", ".log")
             raise Exception(
                 ("Latex error converting to dvi. " if not TEX_USE_CTEX
@@ -86,14 +83,12 @@ def dvi_to_svg(dvi_file, regen_if_exists=False):
     if not os.path.exists(result):
         commands = [
             "dvisvgm",
-            "\"{}\"".format(dvi_file),
+            "{}".format(dvi_file),
             "-n",
             "-v",
             "0",
             "-o",
-            "\"{}\"".format(result),
-            ">",
-            os.devnull
+            "{}".format(result),
         ]
-        os.system(" ".join(commands))
+        subprocess.run(commands)
     return result
